@@ -52,9 +52,10 @@ public class UsersQueueExtension implements
 
     @SuppressWarnings({"unchecked", "ThrowableNotThrown"})
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
+    public void beforeEach(ExtensionContext context) {
         Arrays.stream(context.getRequiredTestMethod().getParameters())
-                .filter(p -> AnnotationSupport.isAnnotated(p, UserType.class))
+                .filter(p -> AnnotationSupport.isAnnotated(p, UserType.class)
+                        && p.getType().isAssignableFrom(StaticUser.class))
                 .forEach(parameter -> Optional.of(parameter)
                         .map(p -> p.getAnnotation(UserType.class))
                         .ifPresent(
@@ -85,16 +86,19 @@ public class UsersQueueExtension implements
 
     @SuppressWarnings("unchecked")
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
-        ((Map<UserType, StaticUser>) context.getStore(NAMESPACE).get(context.getUniqueId(), Map.class)).values()
-                .forEach(user -> {
-                    switch (user.type) {
-                        case EMPTY -> EMPTY_USERS.add(user);
-                        case WITH_FRIEND -> USERS_WITH_FRIEND.add(user);
-                        case WITH_INCOME_REQUEST -> USERS_WITH_INCOME_REQUEST.add(user);
-                        case WITH_OUTCOME_REQUEST -> USERS_WITH_OUTCOME_REQUEST.add(user);
-                    }
-                });
+    public void afterEach(ExtensionContext context) {
+        var usersByType = ((Map<UserType, StaticUser>) context.getStore(NAMESPACE).get(context.getUniqueId(), Map.class));
+        if (usersByType != null) {
+            usersByType.values()
+                    .forEach(user -> {
+                        switch (user.type) {
+                            case EMPTY -> EMPTY_USERS.add(user);
+                            case WITH_FRIEND -> USERS_WITH_FRIEND.add(user);
+                            case WITH_INCOME_REQUEST -> USERS_WITH_INCOME_REQUEST.add(user);
+                            case WITH_OUTCOME_REQUEST -> USERS_WITH_OUTCOME_REQUEST.add(user);
+                        }
+                    });
+        }
     }
 
     @Override
