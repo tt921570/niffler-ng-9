@@ -11,6 +11,10 @@ public class SpendApiClient extends ApiClient {
 
   private final SpendApi spendApi = retrofit.create(SpendApi.class);
 
+  public SpendApiClient() {
+    super(CFG.spendUrl());
+  }
+
   public SpendJson addSpend(SpendJson spendJson) {
     return executeApiCall(() -> spendApi.addSpend(spendJson), HttpStatus.CREATED_201);
   }

@@ -18,10 +18,16 @@ public abstract class ApiClient {
 
     public static final Config CFG = Config.getInstance();
 
-    protected final Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(CFG.spendUrl())
-            .addConverterFactory(JacksonConverterFactory.create())
-            .build();
+    protected final Retrofit retrofit;
+    protected final String baseUrl;
+
+    public ApiClient(String baseUrl) {
+        this.baseUrl = baseUrl;
+        retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(JacksonConverterFactory.create())
+                .build();
+    }
 
     protected <T> T executeApiCall(Supplier<Call<T>> spendApiSupplier, int status) {
         Response<T> response;
