@@ -12,6 +12,7 @@ public class MainPage {
   private final SelenideElement statChart = $("#stat");
   private final SelenideElement menu = $("[aria-label=Menu]");
   private final SelenideElement profileMenuItem = $("[href=\"/profile\"]");
+  private final SelenideElement friendsMenuItem = $(".nav-link[href=\"/people/friends\"]");
 
   @Step("Statistics and History of Spendings is displayed")
   public MainPage checkThatPageLoaded() {
@@ -40,5 +41,12 @@ public class MainPage {
     menu.click();
     profileMenuItem.click();
     return new ProfilePage();
+  }
+
+  @Step("Open Friends")
+  public FriendsPage openFriendsPage() {
+    menu.click();
+    friendsMenuItem.click();
+    return new FriendsPage();
   }
 }
