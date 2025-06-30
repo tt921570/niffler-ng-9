@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Alexander
@@ -20,16 +21,15 @@ public class IssueExtension implements ExecutionCondition {
     @SneakyThrows
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-        return AnnotationSupport.findAnnotation(
-                context.getRequiredTestMethod(),
-                DisabledByIssue.class
-        ).or(
-                () -> AnnotationSupport.findAnnotation(
-                        context.getRequiredTestClass(),
-                        DisabledByIssue.class,
-                        List.of(SpendingTest.class)
-                )
-        ).map(
+        Optional<DisabledByIssue> annotation;
+
+        annotation = AnnotationSupport.findAnnotation(
+                context.getRequiredTestClass(),
+                DisabledByIssue.class,
+                List.of(SpendingTest.class)
+        );
+
+        return annotation.map(
                 byIssue -> "open".equals(ghApiClient.issueState(byIssue.value()))
                         ? ConditionEvaluationResult.disabled("Disabled by issue #" + byIssue.value())
                         : ConditionEvaluationResult.enabled("Issue closed")
