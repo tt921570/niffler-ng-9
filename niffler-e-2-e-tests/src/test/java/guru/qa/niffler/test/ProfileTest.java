@@ -2,7 +2,7 @@ package guru.qa.niffler.test;
 
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.jupiter.annotation.Category;
-import guru.qa.niffler.jupiter.annotation.WebTest;
+import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.page.LoginPage;
 import org.junit.jupiter.api.DisplayName;

@@ -9,6 +9,8 @@ import org.junit.platform.commons.support.AnnotationSupport;
 
 import java.util.UUID;
 
+import static guru.qa.niffler.jupiter.extension.TestMethodContextExtension.context;
+
 /**
  * @author Alexander
  */
@@ -65,9 +67,13 @@ public class CategoryExtension implements BeforeEachCallback, AfterTestExecution
     }
 
     @Override
-    public CategoryJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
-            throws ParameterResolutionException {
-        return extensionContext.getStore(CategoryExtension.NAMESPACE)
-                .get(extensionContext.getUniqueId(), CategoryJson.class);
+    public CategoryJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return createdCategory();
+    }
+
+    public static CategoryJson createdCategory() {
+        final ExtensionContext methodContext = context();
+        return methodContext.getStore(NAMESPACE)
+                .get(methodContext.getUniqueId(), CategoryJson.class);
     }
 }

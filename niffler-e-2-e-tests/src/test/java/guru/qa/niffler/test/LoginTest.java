@@ -2,7 +2,7 @@ package guru.qa.niffler.test;
 
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.config.Config;
-import guru.qa.niffler.jupiter.annotation.WebTest;
+import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.page.LoginPage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,9 +16,9 @@ public class LoginTest {
   @DisplayName("Main page is displayed after successful login")
   void mainPageShouldBeDisplayedAfterSuccessLogin() {
     Selenide.open(CFG.frontUrl(), LoginPage.class)
-        .fillLoginPage("duck", "12345")
-        .submit()
-        .checkThatPageLoaded();
+            .fillLoginPage("duck", "12345")
+            .submit()
+            .checkThatPageLoaded();
   }
 
   @Test
