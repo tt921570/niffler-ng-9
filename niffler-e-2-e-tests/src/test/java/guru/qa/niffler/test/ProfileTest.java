@@ -2,6 +2,7 @@ package guru.qa.niffler.test;
 
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.jupiter.annotation.Category;
+import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.page.LoginPage;
@@ -16,9 +17,9 @@ import static guru.qa.niffler.api.ApiClient.CFG;
 @WebTest
 public class ProfileTest {
 
-    @Category(
+    @User(
             username = "goose",
-            archived = true
+            categories = @Category(archived = true)
     )
     @Test
     @DisplayName("Archived category is displayed in Category list")
@@ -31,7 +32,7 @@ public class ProfileTest {
                 .categoryIsPresentInList(category.name());
     }
 
-    @Category(username = "penguin")
+    @User(username = "penguin")
     @Test
     @DisplayName("Active category is displayed in Category list")
     void activeCategoryShouldPresentInCategoryList(CategoryJson category) {
