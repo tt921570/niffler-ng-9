@@ -7,6 +7,7 @@ import guru.qa.niffler.utils.RandomDataUtils;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import static guru.qa.niffler.jupiter.extension.TestMethodContextExtension.context;
@@ -23,7 +24,7 @@ public class CategoryExtension implements BeforeEachCallback, AfterTestExecution
     public void beforeEach(ExtensionContext context) {
         AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
                 .ifPresent(userAnno -> {
-                    if (userAnno.username() != null) {
+                    if (!Objects.equals(userAnno.username(), "")) {
                         CategoryJson category = new CategoryJson(
                                 UUID.randomUUID(),
                                 RandomDataUtils.randomCategoryName(),
