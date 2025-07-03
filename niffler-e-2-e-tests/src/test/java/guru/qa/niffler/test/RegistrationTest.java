@@ -1,12 +1,13 @@
 package guru.qa.niffler.test;
 
 import com.codeborne.selenide.Selenide;
-import com.github.javafaker.Faker;
-import guru.qa.niffler.config.Config;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.page.LoginPage;
+import guru.qa.niffler.utils.RandomDataUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import static guru.qa.niffler.api.ApiClient.CFG;
 
 /**
  * @author Alexander
@@ -14,13 +15,10 @@ import org.junit.jupiter.api.Test;
 @WebTest
 public class RegistrationTest {
 
-    private static final Config CFG = Config.getInstance();
-
     @Test
     @DisplayName("New user registration")
     void shouldRegisterNewUser() {
-        Faker faker = new Faker();
-        String newUsername = faker.name().username();
+        String newUsername = RandomDataUtils.randomUsername();
         String newUserPassword = "12345";
 
         Selenide.open(CFG.frontUrl(), LoginPage.class)
@@ -50,12 +48,9 @@ public class RegistrationTest {
     @Test
     @DisplayName("Error if password and confirmation are not equal")
     void shouldShowErrorIfPasswordAndConfirmPasswordAreNotEqual() {
-        Faker faker = new Faker();
-        String newUsername = faker.name().username();
-
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .createNewAccount()
-                .setUsername(newUsername)
+                .setUsername(RandomDataUtils.randomUsername())
                 .setPassword("1wsx")
                 .setPasswordSubmit("2wsx")
                 .errorSubmit()
