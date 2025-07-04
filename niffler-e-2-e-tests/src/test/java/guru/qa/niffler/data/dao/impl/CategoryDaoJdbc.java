@@ -68,4 +68,50 @@ public class CategoryDaoJdbc implements CategoryDao {
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public Optional<CategoryEntity> findCategoryByUsernameAndCategoryName(String username, String categoryName) {
+    try (Connection connection = Databases.connection(CFG.spendJdbcUrl())) {
+      try (PreparedStatement ps = connection.prepareStatement(
+              "SELECT * FROM category WHERE username = ? AND name = ?"
+      )) {
+        ps.setString(1, username);
+        ps.setString(2, categoryName);
+        ps.execute();
+        try (ResultSet rs = ps.getResultSet()) {
+          if (rs.next()) {
+            CategoryEntity ce = new CategoryEntity();
+            ce.setId(rs.getObject("id", UUID.class));
+            ce.setUsername(rs.getString("username"));
+            ce.setName(rs.getString("name"));
+            ce.setArchived(rs.getBoolean("archived"));
+            return Optional.of(ce);
+          } else {
+            return Optional.empty();
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void deleteCategory(CategoryEntity category) {
+    try (Connection connection = Databases.connection(CFG.spendJdbcUrl())) {
+      try (PreparedStatement ps = connection.prepareStatement(
+              "DELETE FROM category WHERE id = ?"
+      )) {
+        ps.setObject(1, category.getId());
+
+        int rowsDeleted = ps.executeUpdate();
+
+        if (rowsDeleted < 0) {
+          throw new SQLException(String.format("Can`t delete category [%s] because it's not found", category));
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
