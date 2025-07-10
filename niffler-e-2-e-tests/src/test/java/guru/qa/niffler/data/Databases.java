@@ -9,9 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -23,16 +21,16 @@ public class Databases {
   private static final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
     private static final Map<Long, Map<String, Connection>> threadConnections = new ConcurrentHashMap<>();
 
-    public record XaFunction<T>(Function<Connection, T> function, String jdbcUrl) {
+    public record XaFunction<T>(Function<Connection, T> function, String jdbcUrl, int isolationLevel) {
     }
 
-    public record XaConsumer(Consumer<Connection> function, String jdbcUrl) {
+    public record XaConsumer(Consumer<Connection> function, String jdbcUrl, int isolationLevel) {
     }
 
-    public static <T> T transaction(Function<Connection, T> function, String jdbcUrl) {
+    public static <T> T transaction(Function<Connection, T> function, String jdbcUrl, int isolationLevel) {
         Connection connection = null;
         try {
-            connection = connection(jdbcUrl);
+            connection = connection(jdbcUrl, isolationLevel);
             connection.setAutoCommit(false);
             T result = function.apply(connection);
             connection.commit();
@@ -57,7 +55,7 @@ public class Databases {
             ut.begin();
             T result = null;
             for (XaFunction<T> action : actions) {
-                result = action.function.apply(connection(action.jdbcUrl));
+                result = action.function.apply(connection(action.jdbcUrl, action.isolationLevel));
             }
             ut.commit();
             return result;
@@ -71,10 +69,10 @@ public class Databases {
         }
     }
 
-    public static void transaction(Consumer<Connection> consumer, String jdbcUrl) {
+    public static void transaction(Consumer<Connection> consumer, String jdbcUrl, int isolationLevel) {
         Connection connection = null;
         try {
-            connection = connection(jdbcUrl);
+            connection = connection(jdbcUrl, isolationLevel);
             connection.setAutoCommit(false);
             consumer.accept(connection);
             connection.commit();
@@ -97,7 +95,7 @@ public class Databases {
         try {
             ut.begin();
             for (XaConsumer action : actions) {
-                action.function.accept(connection(action.jdbcUrl));
+                action.function.accept(connection(action.jdbcUrl, action.isolationLevel));
             }
             ut.commit();
         } catch (Exception e) {
@@ -129,14 +127,24 @@ public class Databases {
     );
   }
 
-    private static Connection connection(String jdbcUrl) throws SQLException {
+    private static Connection connection(String jdbcUrl, int isolationLevel){
+        List<Integer> supportedLevels = List.of(
+                Connection.TRANSACTION_READ_UNCOMMITTED,
+                Connection.TRANSACTION_READ_COMMITTED,
+                Connection.TRANSACTION_REPEATABLE_READ,
+                Connection.TRANSACTION_SERIALIZABLE);
+        if (!supportedLevels.contains(isolationLevel)) {
+            throw new IllegalArgumentException("Unsupported isolation level: " + isolationLevel);
+        }
         return threadConnections.computeIfAbsent(
                 Thread.currentThread().threadId(),
                 key -> {
                     try {
+                        Connection connection = dataSource(jdbcUrl).getConnection();
+                        connection.setTransactionIsolation(isolationLevel);
                         return new HashMap<>(Map.of(
                                 jdbcUrl,
-                                dataSource(jdbcUrl).getConnection()
+                                connection
                         ));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
