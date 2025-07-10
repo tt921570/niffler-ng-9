@@ -16,5 +16,5 @@ import java.util.UUID;
 public class AuthorityEntity {
      private UUID id;
      private Authority authority;
-     private UserEntity user;
+     private AuthUserEntity user;
 }

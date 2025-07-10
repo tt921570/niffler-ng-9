@@ -1,7 +1,7 @@
 package guru.qa.niffler.data.dao.impl;
 
 import guru.qa.niffler.data.dao.AuthUserDao;
-import guru.qa.niffler.data.entity.auth.UserEntity;
+import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -24,18 +24,18 @@ public class AuthUserDaoJdbc implements AuthUserDao {
     }
 
     @Override
-    public UserEntity create(UserEntity userEntity) {
+    public AuthUserEntity create(AuthUserEntity authUserEntity) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "INSERT INTO \"user\" (username, \"password\", enabled, account_non_expired, account_non_locked, credentials_non_expired) " +
                         "VALUES ( ?, ?, ?, ?, ?, ?);",
                 Statement.RETURN_GENERATED_KEYS
         )) {
-            ps.setString(1, userEntity.getUsername());
-            ps.setString(2, PASSWORD_ENCODER.encode(userEntity.getPassword()));
-            ps.setBoolean(3, userEntity.getEnabled());
-            ps.setBoolean(4, userEntity.getAccountNonExpired());
-            ps.setBoolean(5, userEntity.getAccountNonLocked());
-            ps.setBoolean(6, userEntity.getCredentialsNonExpired());
+            ps.setString(1, authUserEntity.getUsername());
+            ps.setString(2, PASSWORD_ENCODER.encode(authUserEntity.getPassword()));
+            ps.setBoolean(3, authUserEntity.getEnabled());
+            ps.setBoolean(4, authUserEntity.getAccountNonExpired());
+            ps.setBoolean(5, authUserEntity.getAccountNonLocked());
+            ps.setBoolean(6, authUserEntity.getCredentialsNonExpired());
 
             ps.executeUpdate();
 
@@ -47,15 +47,15 @@ public class AuthUserDaoJdbc implements AuthUserDao {
                     throw new SQLException("Can`t find id in ResultSet");
                 }
             }
-            userEntity.setId(generatedKey);
-            return userEntity;
+            authUserEntity.setId(generatedKey);
+            return authUserEntity;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Optional<UserEntity> findUserById(UUID id) {
+    public Optional<AuthUserEntity> findUserById(UUID id) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM \"user\" WHERE id = ?;"
         )) {
@@ -63,7 +63,7 @@ public class AuthUserDaoJdbc implements AuthUserDao {
             ps.execute();
             try (ResultSet rs = ps.getResultSet()) {
                 if (rs.next()) {
-                    UserEntity ue = new UserEntity();
+                    AuthUserEntity ue = new AuthUserEntity();
                     ue.setId(rs.getObject("id", UUID.class));
                     ue.setUsername(rs.getString("username"));
                     ue.setEnabled(rs.getBoolean("enabled"));
@@ -81,7 +81,7 @@ public class AuthUserDaoJdbc implements AuthUserDao {
     }
 
     @Override
-    public Optional<UserEntity> findUserByUserName(String username) {
+    public Optional<AuthUserEntity> findUserByUserName(String username) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM \"user\" WHERE username = ?;"
         )) {
@@ -89,7 +89,7 @@ public class AuthUserDaoJdbc implements AuthUserDao {
             ps.execute();
             try (ResultSet rs = ps.getResultSet()) {
                 if (rs.next()) {
-                    UserEntity ue = new UserEntity();
+                    AuthUserEntity ue = new AuthUserEntity();
                     ue.setId(rs.getObject("id", UUID.class));
                     ue.setUsername(rs.getString("username"));
                     ue.setEnabled(rs.getBoolean("enabled"));
@@ -107,9 +107,9 @@ public class AuthUserDaoJdbc implements AuthUserDao {
     }
 
     @Override
-    public List<UserEntity> findUsersByActiveProperties(boolean isEnabled, boolean isAccountNonExpired,
-                                                        boolean isAccountNonLocked, boolean isCredentialsNonExpired) {
-        List<UserEntity> userEntities = new ArrayList<>();
+    public List<AuthUserEntity> findUsersByActiveProperties(boolean isEnabled, boolean isAccountNonExpired,
+                                                            boolean isAccountNonLocked, boolean isCredentialsNonExpired) {
+        List<AuthUserEntity> userEntities = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM \"user\" WHERE enabled = ? AND accountNonExpired = ? " +
                         "AND accountNonLocked = ? AND credentialsNonExpired = ?;"
@@ -121,7 +121,7 @@ public class AuthUserDaoJdbc implements AuthUserDao {
             ps.execute();
             try (ResultSet rs = ps.getResultSet()) {
                 while (rs.next()) {
-                    UserEntity ue = new UserEntity();
+                    AuthUserEntity ue = new AuthUserEntity();
                     ue.setId(rs.getObject("id", UUID.class));
                     ue.setUsername(rs.getString("username"));
                     ue.setEnabled(rs.getBoolean("enabled"));
@@ -138,16 +138,16 @@ public class AuthUserDaoJdbc implements AuthUserDao {
     }
 
     @Override
-    public void deleteUser(UserEntity userEntity) {
+    public void deleteUser(AuthUserEntity authUserEntity) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "DELETE FROM \"user\" WHERE id = ?;"
         )) {
-            ps.setObject(1, userEntity.getId());
+            ps.setObject(1, authUserEntity.getId());
 
             int rowsDeleted = ps.executeUpdate();
 
             if (rowsDeleted < 0) {
-                throw new SQLException(String.format("Can`t delete user [%s] because it's not found", userEntity));
+                throw new SQLException(String.format("Can`t delete user [%s] because it's not found", authUserEntity));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -1,18 +1,18 @@
 package guru.qa.niffler.test;
 
-import guru.qa.niffler.data.dao.Authority;
-import guru.qa.niffler.data.entity.auth.AuthorityEntity;
-import guru.qa.niffler.data.entity.auth.UserEntity;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
-import guru.qa.niffler.service.AuthDbClient;
+import guru.qa.niffler.model.User;
+import guru.qa.niffler.service.UserDbClient;
 import guru.qa.niffler.service.SpendDbClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
-import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 @Disabled
 public class JdbcTest {
@@ -43,19 +43,23 @@ public class JdbcTest {
 
     @Test
     void authUserTxTest() {
-        AuthDbClient authDbClient = new AuthDbClient();
+        UserDbClient userDbClient = new UserDbClient();
 
-        UserEntity userEntity = UserEntity.builder()
-                .username("koala")
-                .password("koala")
-                .authorities(List.of(AuthorityEntity.builder()
-                        .authority(Authority.read)
-                        .build()))
+        User user = User.builder()
+                .authUsername("fox")
+                .userdataUsername("buddy")
+                .password("fox")
                 .build();
 
-        authDbClient.createAuthUser(userEntity);
+        String errorMessage = "";
+        try {
+            userDbClient.createUser(user);
+        } catch (RuntimeException e) {
+            System.out.println(e.getLocalizedMessage());
+            errorMessage = e.getLocalizedMessage();
+        }
 
-        System.out.println(userEntity);
+        assertThat(errorMessage, containsString("Key (username)=(buddy) already exists."));
+        System.out.println(user);
     }
-
 }
