@@ -41,5 +41,5 @@ public class User {
     private byte[] photo;
     private byte[] photoSmall;
     @Builder.Default
-    private EnumSet<Authority> authorities = EnumSet.noneOf(Authority.class);
+    private EnumSet<Authority> authorities = EnumSet.of(Authority.read, Authority.write);
 }

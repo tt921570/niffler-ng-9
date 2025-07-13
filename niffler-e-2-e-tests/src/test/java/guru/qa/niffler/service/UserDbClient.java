@@ -27,12 +27,9 @@ public class UserDbClient {
         var authUserCreation = new Databases.XaFunction<>(connection -> {
             var authUserEntity = AuthUserEntity.fromUser(user);
             var createdUserEntity = new AuthUserDaoJdbc(connection).create(authUserEntity);
-            List<AuthorityEntity> newAuthorities = new ArrayList<>();
-            authUserEntity.getAuthorities().forEach(authorityEntity -> {
-                authorityEntity.setUser(createdUserEntity);
-                newAuthorities.add(new AuthAuthorityDaoJdbc(connection).create(authorityEntity));
-            });
-            createdUserEntity.setAuthorities(newAuthorities);
+            authUserEntity.getAuthorities().forEach(authorityEntity ->
+                    authorityEntity.setUser(createdUserEntity));
+            new AuthAuthorityDaoJdbc(connection).create(authUserEntity.getAuthorities().toArray(AuthorityEntity[]::new));
             user.setAuthId(createdUserEntity.getId());
             return user;
         },
