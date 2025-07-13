@@ -21,4 +21,6 @@ public interface AuthUserDao {
                                                      boolean isAccountNonLocked, boolean isCredentialsNonExpired);
 
     void deleteUser(AuthUserEntity authUserEntity);
+
+    Optional<AuthUserEntity> findById(UUID id);
 }
