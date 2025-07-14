@@ -75,4 +75,10 @@ public class JdbcTest {
         );
         System.out.println(user);
     }
+
+    @Test
+    void findAllTest() {
+        SpendDbClient spendDbClient = new SpendDbClient();
+        spendDbClient.findAll().forEach(System.out::println);
+    }
 }

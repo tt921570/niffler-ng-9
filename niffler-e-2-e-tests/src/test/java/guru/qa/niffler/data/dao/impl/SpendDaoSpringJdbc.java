@@ -1,9 +1,7 @@
 package guru.qa.niffler.data.dao.impl;
 
-import guru.qa.niffler.data.dao.CategoryDao;
-import guru.qa.niffler.data.entity.spend.CategoryEntity;
+import guru.qa.niffler.data.dao.SpendDao;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
-import guru.qa.niffler.data.mapper.CategoryRowMapper;
 import guru.qa.niffler.data.mapper.SpendRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -19,73 +17,75 @@ import java.util.UUID;
 /**
  * @author Alexander
  */
-public class CategoryDaoSpringJdbc implements CategoryDao {
+public class SpendDaoSpringJdbc implements SpendDao {
 
     private final DataSource dataSource;
 
-    public CategoryDaoSpringJdbc(DataSource dataSource) {
+    public SpendDaoSpringJdbc(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
+
     @Override
-    public CategoryEntity create(CategoryEntity category) {
+    public SpendEntity create(SpendEntity spend) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
                     "INSERT INTO category (username, name, archived) " +
-                            "VALUES (?, ?, ?)",
+                            "VALUES (?, ?, ?);",
                     Statement.RETURN_GENERATED_KEYS
             );
-            ps.setString(1, category.getUsername());
-            ps.setString(2, category.getName());
-            ps.setBoolean(3, category.isArchived());
+            ps.setString(1, spend.getUsername());
+            ps.setDate(2, spend.getSpendDate());
+            ps.setString(3, spend.getCurrency().name());
+            ps.setDouble(4, spend.getAmount());
+            ps.setString(5, spend.getDescription());
+            ps.setObject(6, spend.getCategory().getId());
             return ps;
         }, kh);
 
         final UUID generatedKey = (UUID) kh.getKeys().get("id");
-        category.setId(generatedKey);
-        return category;
+        spend.setId(generatedKey);
+        return spend;
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryById(UUID id) {
+    public Optional<SpendEntity> findSpendById(UUID id) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return Optional.ofNullable(
                 jdbcTemplate.queryForObject(
-                        "SELECT * FROM category WHERE id = ?",
-                        CategoryRowMapper.instance,
+                        "SELECT * FROM spend WHERE id = ?;",
+                        SpendRowMapper.instance,
                         id
                 )
         );
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryByUsernameAndCategoryName(String username, String categoryName) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return Optional.ofNullable(
-                jdbcTemplate.queryForObject(
-                        "SELECT * FROM category WHERE username = ? AND name = ?",
-                        CategoryRowMapper.instance,
-                        username, categoryName
-                )
-        );
-    }
-
-    @Override
-    public List<CategoryEntity> findAll() {
+    public List<SpendEntity> findAllByUsername(String username) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return jdbcTemplate.query(
-                "SELECT * FROM category;",
-                CategoryRowMapper.instance
+                "SELECT * FROM spend WHERE username = ?;",
+                SpendRowMapper.instance,
+                username
         );
     }
 
     @Override
-    public void deleteCategory(CategoryEntity category) {
+    public List<SpendEntity> findAll() {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        return jdbcTemplate.query(
+                "SELECT * FROM spend;",
+                SpendRowMapper.instance
+        );
+    }
+
+    @Override
+    public void deleteSpend(SpendEntity spend) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.update(
-                "DELETE FROM category WHERE id = ?",
-                category.getId());
+                "DELETE FROM spend WHERE id = ?",
+                spend.getId());
     }
 }

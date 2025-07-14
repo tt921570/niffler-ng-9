@@ -1,16 +1,15 @@
 package guru.qa.niffler.data.entity.spend;
 
 import guru.qa.niffler.model.CategoryJson;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.UUID;
 
 @Data
-@Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CategoryEntity implements Serializable {
   private UUID id;
   private String name;

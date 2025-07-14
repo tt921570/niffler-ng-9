@@ -1,8 +1,6 @@
 package guru.qa.niffler.model;
 
 import guru.qa.niffler.data.dao.Authority;
-import guru.qa.niffler.data.entity.auth.AuthUserEntity;
-import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

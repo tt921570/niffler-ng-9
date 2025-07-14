@@ -2,8 +2,12 @@ package guru.qa.niffler.data.dao.impl;
 
 import guru.qa.niffler.data.dao.CategoryDao;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
+import guru.qa.niffler.data.entity.spend.SpendEntity;
+import guru.qa.niffler.model.CurrencyValues;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -90,6 +94,29 @@ public class CategoryDaoJdbc implements CategoryDao {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+  
+  @Override
+  public List<CategoryEntity> findAll() {
+    List<CategoryEntity> categoryEntities = new ArrayList<>();
+    try (PreparedStatement ps = connection.prepareStatement(
+            "SELECT * FROM category;"
+    )) {
+      ps.execute();
+      try (ResultSet rs = ps.getResultSet()) {
+        while (rs.next()) {
+          CategoryEntity ce = new CategoryEntity();
+          ce.setId(rs.getObject("id", UUID.class));
+          ce.setUsername(rs.getString("username"));
+          ce.setName(rs.getString("name"));
+          ce.setArchived(rs.getBoolean("archived"));
+          categoryEntities.add(ce);
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    return categoryEntities;
   }
 
   @Override
