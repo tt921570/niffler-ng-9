@@ -62,4 +62,17 @@ public class JdbcTest {
         assertThat(errorMessage, containsString("Key (username)=(buddy) already exists."));
         System.out.println(user);
     }
+
+    @Test
+    void springJdbcTest() {
+        UserDbClient usersDbClient = new UserDbClient();
+        User user = usersDbClient.createUserSpringJdbc(
+                User.builder()
+                        .authUsername("wombat")
+                        .userdataUsername("wombat")
+                        .password("wombat")
+                        .build()
+        );
+        System.out.println(user);
+    }
 }
