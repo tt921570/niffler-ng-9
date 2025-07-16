@@ -2,7 +2,6 @@ package guru.qa.niffler.data.dao.impl;
 
 import guru.qa.niffler.data.dao.AuthAuthorityDao;
 import guru.qa.niffler.data.dao.Authority;
-import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 
 import java.sql.*;
@@ -52,7 +51,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
     }
 
     @Override
-    public Optional<AuthUserEntity> findById(UUID id) {
+    public Optional<AuthorityEntity> findById(UUID id) {
         return Optional.empty();
     }
 
@@ -63,6 +62,27 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
                 "SELECT * FROM authority WHERE user_id = ? ;"
         )) {
             ps.setObject(1, userId);
+            ps.execute();
+            try (ResultSet rs = ps.getResultSet()) {
+                while (rs.next()) {
+                    AuthorityEntity ue = new AuthorityEntity();
+                    ue.setId(rs.getObject("id", UUID.class));
+                    ue.setAuthority(Authority.valueOf(rs.getString("authority")));
+                    userAuthorities.add(ue);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return userAuthorities;
+    }
+
+    @Override
+    public List<AuthorityEntity> findAll() {
+        List<AuthorityEntity> userAuthorities = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT * FROM authority;"
+        )) {
             ps.execute();
             try (ResultSet rs = ps.getResultSet()) {
                 while (rs.next()) {

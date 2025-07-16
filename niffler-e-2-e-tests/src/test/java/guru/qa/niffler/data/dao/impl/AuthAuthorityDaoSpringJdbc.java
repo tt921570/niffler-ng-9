@@ -1,8 +1,8 @@
 package guru.qa.niffler.data.dao.impl;
 
 import guru.qa.niffler.data.dao.AuthAuthorityDao;
-import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
+import guru.qa.niffler.data.mapper.AuthAuthorityRowMapper;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -25,7 +25,7 @@ public class AuthAuthorityDaoSpringJdbc implements AuthAuthorityDao {
   public void create(AuthorityEntity... authority) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
     jdbcTemplate.batchUpdate(
-        "INSERT INTO authority (user_id, authority) VALUES (? , ?)",
+        "INSERT INTO authority (user_id, authority) VALUES (? , ?);",
         new BatchPreparedStatementSetter() {
           @Override
           public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -42,22 +42,49 @@ public class AuthAuthorityDaoSpringJdbc implements AuthAuthorityDao {
   }
 
     @Override
-    public Optional<AuthUserEntity> findById(UUID id) {
-        return Optional.empty();
+    public Optional<AuthorityEntity> findById(UUID id) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        return Optional.ofNullable(
+                jdbcTemplate.queryForObject(
+                        "SELECT * FROM authority WHERE id = ?;",
+                        AuthAuthorityRowMapper.instance,
+                        id
+                )
+        );
     }
 
     @Override
     public List<AuthorityEntity> findAuthoritiesByUserId(UUID userId) {
-        return List.of();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        return jdbcTemplate.query(
+                "SELECT * FROM authority WHERE user = ?;",
+                AuthAuthorityRowMapper.instance,
+                userId
+        );
+    }
+
+    @Override
+    public List<AuthorityEntity> findAll() {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        return jdbcTemplate.query(
+                "SELECT * FROM authority;",
+                AuthAuthorityRowMapper.instance
+        );
     }
 
     @Override
     public void deleteAuthority(AuthorityEntity authorityEntity) {
-
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate.update(
+                "DELETE FROM authority WHERE id = ?;",
+                authorityEntity.getId());
     }
 
     @Override
     public void deleteAllAuthoritiesByUserId(UUID userId) {
-
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate.update(
+                "DELETE FROM authority WHERE user_id = ?;",
+                userId);
     }
 }

@@ -9,8 +9,10 @@ import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 
 import java.sql.Connection;
+import java.util.List;
 
 import static guru.qa.niffler.data.Databases.transaction;
+import static java.util.stream.Collectors.toList;
 
 public class SpendDbClient {
 
@@ -43,5 +45,15 @@ public class SpendDbClient {
             CFG.spendJdbcUrl(),
             Connection.TRANSACTION_SERIALIZABLE
     );
+  }
+
+  public List<CategoryJson> findAll() {
+      return transaction(connection -> {
+                  return new CategoryDaoJdbc(connection).findAll().stream()
+                          .map(CategoryJson::fromEntity)
+                          .collect(toList());
+              },
+              CFG.spendJdbcUrl(),
+              Connection.TRANSACTION_SERIALIZABLE);
   }
 }

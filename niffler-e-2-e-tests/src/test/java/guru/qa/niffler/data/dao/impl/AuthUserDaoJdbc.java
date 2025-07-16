@@ -55,32 +55,6 @@ public class AuthUserDaoJdbc implements AuthUserDao {
     }
 
     @Override
-    public Optional<AuthUserEntity> findUserById(UUID id) {
-        try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT * FROM \"user\" WHERE id = ?;"
-        )) {
-            ps.setObject(1, id);
-            ps.execute();
-            try (ResultSet rs = ps.getResultSet()) {
-                if (rs.next()) {
-                    AuthUserEntity ue = new AuthUserEntity();
-                    ue.setId(rs.getObject("id", UUID.class));
-                    ue.setUsername(rs.getString("username"));
-                    ue.setEnabled(rs.getBoolean("enabled"));
-                    ue.setAccountNonExpired(rs.getBoolean("accountNonExpired"));
-                    ue.setAccountNonLocked(rs.getBoolean("accountNonLocked"));
-                    ue.setCredentialsNonExpired(rs.getBoolean("credentialsNonExpired"));
-                    return Optional.of(ue);
-                } else {
-                    return Optional.empty();
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public Optional<AuthUserEntity> findUserByUserName(String username) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM \"user\" WHERE username = ?;"
@@ -118,6 +92,31 @@ public class AuthUserDaoJdbc implements AuthUserDao {
             ps.setBoolean(2, isAccountNonExpired);
             ps.setBoolean(3, isAccountNonLocked);
             ps.setBoolean(4, isCredentialsNonExpired);
+            ps.execute();
+            try (ResultSet rs = ps.getResultSet()) {
+                while (rs.next()) {
+                    AuthUserEntity ue = new AuthUserEntity();
+                    ue.setId(rs.getObject("id", UUID.class));
+                    ue.setUsername(rs.getString("username"));
+                    ue.setEnabled(rs.getBoolean("enabled"));
+                    ue.setAccountNonExpired(rs.getBoolean("accountNonExpired"));
+                    ue.setAccountNonLocked(rs.getBoolean("accountNonLocked"));
+                    ue.setCredentialsNonExpired(rs.getBoolean("credentialsNonExpired"));
+                    userEntities.add(ue);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return userEntities;
+    }
+
+    @Override
+    public List<AuthUserEntity> findAll() {
+        List<AuthUserEntity> userEntities = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT * FROM \"user\";"
+        )) {
             ps.execute();
             try (ResultSet rs = ps.getResultSet()) {
                 while (rs.next()) {

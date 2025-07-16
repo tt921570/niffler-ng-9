@@ -11,6 +11,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.sql.Connection;
+import java.util.List;
 
 import static guru.qa.niffler.data.Databases.dataSource;
 import static guru.qa.niffler.data.Databases.xaTransaction;

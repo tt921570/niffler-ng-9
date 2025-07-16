@@ -15,10 +15,10 @@ public interface AuthUserDao {
 
     Optional<AuthUserEntity> findUserByUserName(String username);
 
-    Optional<AuthUserEntity> findUserById(UUID id);
-
     List<AuthUserEntity> findUsersByActiveProperties(boolean isEnabled, boolean isAccountNonExpired,
                                                      boolean isAccountNonLocked, boolean isCredentialsNonExpired);
+
+    List<AuthUserEntity> findAll();
 
     void deleteUser(AuthUserEntity authUserEntity);
 

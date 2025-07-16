@@ -48,22 +48,41 @@ public class AuthUserDaoSpringJdbc implements AuthUserDao {
 
   @Override
   public Optional<AuthUserEntity> findUserByUserName(String username) {
-    return Optional.empty();
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    return Optional.ofNullable(
+            jdbcTemplate.queryForObject(
+            "SELECT * FROM \"user\" WHERE username = ?;",
+            AuthUserEntityRowMapper.instance,
+            username)
+    );
   }
 
   @Override
-  public Optional<AuthUserEntity> findUserById(UUID id) {
-    return Optional.empty();
+  public List<AuthUserEntity> findUsersByActiveProperties(boolean isEnabled, boolean isAccountNonExpired,
+                                                          boolean isAccountNonLocked, boolean isCredentialsNonExpired) {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    return jdbcTemplate.query(
+            "SELECT * FROM \"user\" WHERE enabled = ? AND accountNonExpired = ? " +
+                    "AND accountNonLocked = ? AND credentialsNonExpired = ?;",
+            AuthUserEntityRowMapper.instance,
+            isEnabled, isAccountNonExpired, isAccountNonLocked, isCredentialsNonExpired);
   }
 
   @Override
-  public List<AuthUserEntity> findUsersByActiveProperties(boolean isEnabled, boolean isAccountNonExpired, boolean isAccountNonLocked, boolean isCredentialsNonExpired) {
-    return List.of();
+  public List<AuthUserEntity> findAll() {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    return jdbcTemplate.query(
+            "SELECT * FROM \"user\";",
+            AuthUserEntityRowMapper.instance);
   }
 
   @Override
   public void deleteUser(AuthUserEntity authUserEntity) {
-
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    jdbcTemplate.update(
+            "DELETE FROM \"user\" WHERE username = ?;",
+            authUserEntity.getUsername()
+    );
   }
 
   @Override
@@ -71,7 +90,7 @@ public class AuthUserDaoSpringJdbc implements AuthUserDao {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
     return Optional.ofNullable(
         jdbcTemplate.queryForObject(
-            "SELECT * FROM \"user\" WHERE id = ?",
+            "SELECT * FROM \"user\" WHERE id = ?;",
             AuthUserEntityRowMapper.instance,
             id
         )
