@@ -1,9 +1,6 @@
 package guru.qa.niffler.test;
 
-import guru.qa.niffler.model.CategoryJson;
-import guru.qa.niffler.model.CurrencyValues;
-import guru.qa.niffler.model.SpendJson;
-import guru.qa.niffler.model.User;
+import guru.qa.niffler.model.*;
 import guru.qa.niffler.service.UserDbClient;
 import guru.qa.niffler.service.SpendDbClient;
 import org.junit.jupiter.api.Disabled;
@@ -45,35 +42,53 @@ public class JdbcTest {
     void authUserTxTest() {
         UserDbClient userDbClient = new UserDbClient();
 
-        User user = User.builder()
-                .authUsername("fox")
-                .userdataUsername("buddy")
-                .password("fox")
-                .build();
+        UserJson user = new UserJson(
+                null,
+                "fox",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
 
         String errorMessage = "";
         try {
-            userDbClient.createUser(user);
+            userDbClient.createUserSpringJdbc(user);
         } catch (RuntimeException e) {
             System.out.println(e.getLocalizedMessage());
             errorMessage = e.getLocalizedMessage();
         }
 
-        assertThat(errorMessage, containsString("Key (username)=(buddy) already exists."));
+        assertThat(errorMessage, containsString("Key (username)=(fox) already exists."));
         System.out.println(user);
     }
 
     @Test
     void springJdbcTest() {
         UserDbClient usersDbClient = new UserDbClient();
-        User user = usersDbClient.createUserSpringJdbc(
-                User.builder()
-                        .authUsername("wombat")
-                        .userdataUsername("wombat")
-                        .password("wombat")
-                        .build()
+        UserJson user = new UserJson(
+                null,
+                "wombat",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
         );
-        System.out.println(user);
+        String errorMessage = "";
+        try {
+            UserJson createdUser = usersDbClient.createUserSpringJdbc(user);
+            System.out.println("Created User: " + createdUser);
+        } catch (RuntimeException e) {
+            System.out.println(e.getLocalizedMessage());
+            errorMessage = e.getLocalizedMessage();
+        }
+        assertThat(errorMessage, containsString("Key (username)=(wombat) already exists."));
     }
 
     @Test

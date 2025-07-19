@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthorityEntity {
-     private UUID id;
-     private Authority authority;
-     private AuthUserEntity user;
+    private UUID id;
+    private Authority authority;
+    private UUID userId;
 }
