@@ -1,5 +1,6 @@
 package guru.qa.niffler.data.dao.impl;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.AuthAuthorityDao;
 import guru.qa.niffler.data.dao.Authority;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
@@ -10,26 +11,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static guru.qa.niffler.data.tpl.Connections.holder;
+
 /**
  * @author Alexander
  */
 public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
 
-    private final Connection connection;
-
-    public AuthAuthorityDaoJdbc(Connection connection) {
-        this.connection = connection;
-    }
+    private static final Config CFG = Config.getInstance();
 
     @Override
     public void create(AuthorityEntity... authorities) {
-        try (PreparedStatement ps = connection.prepareStatement(
+        try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "INSERT INTO authority (user_id, authority) " +
                         "VALUES (?, ?);",
                 Statement.RETURN_GENERATED_KEYS
         )) {
             for (AuthorityEntity ae : authorities) {
-                ps.setObject(1, ae.getUser().getId());
+                ps.setObject(1, ae.getId());
                 ps.setString(2, ae.getAuthority().name());
                 ps.addBatch();
             }
@@ -58,7 +57,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
     @Override
     public List<AuthorityEntity> findAuthoritiesByUserId(UUID userId) {
         List<AuthorityEntity> userAuthorities = new ArrayList<>();
-        try (PreparedStatement ps = connection.prepareStatement(
+        try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "SELECT * FROM authority WHERE user_id = ? ;"
         )) {
             ps.setObject(1, userId);
@@ -80,7 +79,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
     @Override
     public List<AuthorityEntity> findAll() {
         List<AuthorityEntity> userAuthorities = new ArrayList<>();
-        try (PreparedStatement ps = connection.prepareStatement(
+        try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "SELECT * FROM authority;"
         )) {
             ps.execute();
@@ -100,7 +99,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
 
     @Override
     public void deleteAuthority(AuthorityEntity authorityEntity) {
-        try (PreparedStatement ps = connection.prepareStatement(
+        try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "DELETE FROM authority WHERE id = ?;"
         )) {
             ps.setObject(1, authorityEntity.getId());
@@ -117,7 +116,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
 
     @Override
     public void deleteAllAuthoritiesByUserId(UUID userId) {
-        try (PreparedStatement ps = connection.prepareStatement(
+        try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "DELETE FROM authority WHERE user_id = ?;"
         )) {
             ps.setObject(1, userId);
