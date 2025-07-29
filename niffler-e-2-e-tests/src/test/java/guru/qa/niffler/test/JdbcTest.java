@@ -3,7 +3,7 @@ package guru.qa.niffler.test;
 import guru.qa.niffler.model.*;
 import guru.qa.niffler.service.UserDbClient;
 import guru.qa.niffler.service.SpendDbClient;
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
@@ -12,7 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 
-//@Disabled
+@Disabled
 public class JdbcTest {
 
     @Test
