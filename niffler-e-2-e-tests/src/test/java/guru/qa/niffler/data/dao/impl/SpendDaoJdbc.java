@@ -26,7 +26,7 @@ public class SpendDaoJdbc implements SpendDao {
                 Statement.RETURN_GENERATED_KEYS
         )) {
             ps.setString(1, spend.getUsername());
-            ps.setDate(2, spend.getSpendDate());
+            ps.setDate(2, new java.sql.Date(spend.getSpendDate().getTime()));
             ps.setString(3, spend.getCurrency().name());
             ps.setDouble(4, spend.getAmount());
             ps.setString(5, spend.getDescription());
@@ -66,7 +66,8 @@ public class SpendDaoJdbc implements SpendDao {
                     se.setAmount(rs.getDouble("amount"));
                     se.setDescription(rs.getString("description"));
                     UUID categoryUuid = rs.getObject("category_id", UUID.class);
-                    CategoryEntity ce = CategoryEntity.builder().id(categoryUuid).build();
+                    CategoryEntity ce = new CategoryEntity();
+                    ce.setId(categoryUuid);
                     se.setCategory(ce);
                     return Optional.of(se);
                 } else {
@@ -96,7 +97,8 @@ public class SpendDaoJdbc implements SpendDao {
                     se.setAmount(rs.getDouble("amount"));
                     se.setDescription(rs.getString("description"));
                     UUID categoryUuid = rs.getObject("category_id", UUID.class);
-                    CategoryEntity ce = CategoryEntity.builder().id(categoryUuid).build();
+                    CategoryEntity ce = new CategoryEntity();
+                    ce.setId(categoryUuid);
                     se.setCategory(ce);
                     spendEntities.add(se);
                 }
@@ -124,7 +126,8 @@ public class SpendDaoJdbc implements SpendDao {
                     se.setAmount(rs.getDouble("amount"));
                     se.setDescription(rs.getString("description"));
                     UUID categoryUuid = rs.getObject("category_id", UUID.class);
-                    CategoryEntity ce = CategoryEntity.builder().id(categoryUuid).build();
+                    CategoryEntity ce = new CategoryEntity();
+                    ce.setId(categoryUuid);
                     se.setCategory(ce);
                     spendEntities.add(se);
                 }

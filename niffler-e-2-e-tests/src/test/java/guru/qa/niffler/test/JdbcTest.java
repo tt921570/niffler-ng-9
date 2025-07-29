@@ -12,7 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 
-@Disabled
+//@Disabled
 public class JdbcTest {
 
     @Test
@@ -182,6 +182,25 @@ public class JdbcTest {
                 null
         );
         UserJson createdUser = usersDbClient.createUserJdbcViaTx(user);
+        System.out.println("Created User: " + createdUser);
+        assertThat(createdUser.id(), notNullValue());
+    }
+
+    @Test
+    void createUserViaRepository() {
+        UserDbClient usersDbClient = new UserDbClient();
+        UserJson user = new UserJson(
+                null,
+                "repoUser",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
+        UserJson createdUser = usersDbClient.createUser(user);
         System.out.println("Created User: " + createdUser);
         assertThat(createdUser.id(), notNullValue());
     }
