@@ -3,15 +3,16 @@ package guru.qa.niffler.test;
 import guru.qa.niffler.model.*;
 import guru.qa.niffler.service.UserDbClient;
 import guru.qa.niffler.service.SpendDbClient;
-import org.junit.jupiter.api.Disabled;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 
-@Disabled
+//@Disabled
 public class JdbcTest {
 
     @Test
@@ -56,7 +57,7 @@ public class JdbcTest {
 
         String errorMessage = "";
         try {
-            userDbClient.createUserSpringJdbc(user);
+            userDbClient.createUserSpringJdbcViaTx(user);
         } catch (RuntimeException e) {
             System.out.println(e.getLocalizedMessage());
             errorMessage = e.getLocalizedMessage();
@@ -82,13 +83,107 @@ public class JdbcTest {
         );
         String errorMessage = "";
         try {
-            UserJson createdUser = usersDbClient.createUserSpringJdbc(user);
+            UserJson createdUser = usersDbClient.createUserSpringJdbcViaTx(user);
             System.out.println("Created User: " + createdUser);
         } catch (RuntimeException e) {
             System.out.println(e.getLocalizedMessage());
             errorMessage = e.getLocalizedMessage();
         }
         assertThat(errorMessage, containsString("Key (username)=(wombat) already exists."));
+    }
+
+    @Test
+    void chainedTxTest() {
+        UserDbClient usersDbClient = new UserDbClient();
+        UserJson user = new UserJson(
+                null,
+                "whale",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
+        UserJson createdUser = usersDbClient.createUserViaChainedTx(user);
+        System.out.println("Created User: " + createdUser);
+    }
+
+    @Test
+    void createUserSpringJdbcWithoutTx() {
+        UserDbClient usersDbClient = new UserDbClient();
+        UserJson user = new UserJson(
+                null,
+                "falcon",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
+        UserJson createdUser = usersDbClient.createUserSpringJdbcWithoutTx(user);
+        System.out.println("Created User: " + createdUser);
+        assertThat(createdUser.id(), notNullValue());
+    }
+
+    @Test
+    void createUserSpringJdbcViaTx() {
+        UserDbClient usersDbClient = new UserDbClient();
+        UserJson user = new UserJson(
+                null,
+                "bear",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
+        UserJson createdUser = usersDbClient.createUserSpringJdbcViaTx(user);
+        System.out.println("Created User: " + createdUser);
+        assertThat(createdUser.id(), notNullValue());
+    }
+
+    @Test
+    void createUserJdbcWithoutTxTest() {
+        UserDbClient usersDbClient = new UserDbClient();
+        UserJson user = new UserJson(
+                null,
+                "beaver",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
+        UserJson createdUser = usersDbClient.createUserJdbcWithoutTx(user);
+        System.out.println("Created User: " + createdUser);
+        assertThat(createdUser.id(), notNullValue());
+    }
+
+    @Test
+    void createUserJdbcViaTxTest() {
+        UserDbClient usersDbClient = new UserDbClient();
+        UserJson user = new UserJson(
+                null,
+                "squirrel",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
+        UserJson createdUser = usersDbClient.createUserJdbcViaTx(user);
+        System.out.println("Created User: " + createdUser);
+        assertThat(createdUser.id(), notNullValue());
     }
 
     @Test
