@@ -3,7 +3,7 @@ package guru.qa.niffler.data.dao.impl;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.AuthAuthorityDao;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
-import guru.qa.niffler.data.mapper.AuthAuthorityRowMapper;
+import guru.qa.niffler.data.mapper.AuthorityEntityRowMapper;
 import guru.qa.niffler.data.tpl.DataSources;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +26,7 @@ public class AuthAuthorityDaoSpringJdbc implements AuthAuthorityDao {
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setObject(1, authority[i].getUserId());
+                        ps.setObject(1, authority[i].getUser().getId());
                         ps.setString(2, authority[i].getAuthority().name());
                     }
 
@@ -44,7 +44,7 @@ public class AuthAuthorityDaoSpringJdbc implements AuthAuthorityDao {
         return Optional.ofNullable(
                 jdbcTemplate.queryForObject(
                         "SELECT * FROM authority WHERE id = ?;",
-                        AuthAuthorityRowMapper.instance,
+                        AuthorityEntityRowMapper.instance,
                         id
                 )
         );
@@ -55,7 +55,7 @@ public class AuthAuthorityDaoSpringJdbc implements AuthAuthorityDao {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.authJdbcUrl()));
         return jdbcTemplate.query(
                 "SELECT * FROM authority WHERE user = ?;",
-                AuthAuthorityRowMapper.instance,
+                AuthorityEntityRowMapper.instance,
                 userId
         );
     }
@@ -65,7 +65,7 @@ public class AuthAuthorityDaoSpringJdbc implements AuthAuthorityDao {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.authJdbcUrl()));
         return jdbcTemplate.query(
                 "SELECT * FROM authority;",
-                AuthAuthorityRowMapper.instance
+                AuthorityEntityRowMapper.instance
         );
     }
 

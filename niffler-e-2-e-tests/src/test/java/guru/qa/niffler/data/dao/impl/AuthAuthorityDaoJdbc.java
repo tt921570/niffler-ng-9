@@ -2,7 +2,7 @@ package guru.qa.niffler.data.dao.impl;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.AuthAuthorityDao;
-import guru.qa.niffler.data.dao.Authority;
+import guru.qa.niffler.data.entity.auth.Authority;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 
 import java.sql.*;
@@ -28,7 +28,7 @@ public class AuthAuthorityDaoJdbc implements AuthAuthorityDao {
                 Statement.RETURN_GENERATED_KEYS
         )) {
             for (AuthorityEntity ae : authorities) {
-                ps.setObject(1, ae.getUserId());
+                ps.setObject(1, ae.getUser().getId());
                 ps.setString(2, ae.getAuthority().name());
                 ps.addBatch();
             }

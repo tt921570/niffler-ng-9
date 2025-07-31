@@ -187,6 +187,25 @@ public class JdbcTest {
     }
 
     @Test
+    void createUserViaRepository() {
+        UserDbClient usersDbClient = new UserDbClient();
+        UserJson user = new UserJson(
+                null,
+                "repoUser",
+                null,
+                null,
+                null,
+                CurrencyValues.RUB,
+                null,
+                null,
+                null
+        );
+        UserJson createdUser = usersDbClient.createUser(user);
+        System.out.println("Created User: " + createdUser);
+        assertThat(createdUser.id(), notNullValue());
+    }
+
+    @Test
     void findAllTest() {
         SpendDbClient spendDbClient = new SpendDbClient();
         spendDbClient.findAll().forEach(System.out::println);
