@@ -31,7 +31,7 @@ public class AuthUserRepositorySpring implements AuthUserRepository {
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
-                    """
+                        """
                         INSERT INTO \"user\" (username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired)
                         VALUES (?,?,?,?,?,?)
                         """,
@@ -72,7 +72,7 @@ public class AuthUserRepositorySpring implements AuthUserRepository {
     public Optional<AuthUserEntity> findById(UUID id) {
         return Optional.ofNullable(
                 new JdbcTemplate(DataSources.dataSource(CFG.authJdbcUrl())).query(
-                        """
+                            """
                             SELECT a.id as authority_id,
                                    authority,
                                    user_id,
