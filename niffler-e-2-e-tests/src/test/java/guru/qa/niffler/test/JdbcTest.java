@@ -1,10 +1,12 @@
 package guru.qa.niffler.test;
 
 import guru.qa.niffler.model.*;
-import guru.qa.niffler.service.UserDbClient;
+import guru.qa.niffler.service.UsersDbClient;
 import guru.qa.niffler.service.SpendDbClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Date;
 import java.util.UUID;
@@ -13,8 +15,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 
-@Disabled
 public class JdbcTest {
+
+    static UsersDbClient usersDbClient = new UsersDbClient();
 
     @Test
     void txTest() {
@@ -42,8 +45,6 @@ public class JdbcTest {
 
     @Test
     void authUserTxTest() {
-        UserDbClient userDbClient = new UserDbClient();
-
         UserJson user = new UserJson(
                 null,
                 "fox",
@@ -58,7 +59,7 @@ public class JdbcTest {
 
         String errorMessage = "";
         try {
-            userDbClient.createUserSpringJdbcViaTx(user);
+            usersDbClient.createUserSpringJdbcViaTx(user);
         } catch (RuntimeException e) {
             System.out.println(e.getLocalizedMessage());
             errorMessage = e.getLocalizedMessage();
@@ -69,8 +70,7 @@ public class JdbcTest {
     }
 
     @Test
-    void springJdbcTest() {
-        UserDbClient usersDbClient = new UserDbClient();
+    void springJdbcViaTxTest() {
         UserJson user = new UserJson(
                 null,
                 "wombat",
@@ -95,7 +95,6 @@ public class JdbcTest {
 
     @Test
     void chainedTxTest() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = new UserJson(
                 null,
                 "whale",
@@ -113,7 +112,6 @@ public class JdbcTest {
 
     @Test
     void createUserSpringJdbcWithoutTx() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = new UserJson(
                 null,
                 "falcon",
@@ -132,7 +130,6 @@ public class JdbcTest {
 
     @Test
     void createUserSpringJdbcViaTx() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = new UserJson(
                 null,
                 "bear",
@@ -151,7 +148,6 @@ public class JdbcTest {
 
     @Test
     void createUserJdbcWithoutTxTest() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = new UserJson(
                 null,
                 "beaver",
@@ -170,7 +166,6 @@ public class JdbcTest {
 
     @Test
     void createUserJdbcViaTxTest() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = new UserJson(
                 null,
                 "squirrel",
@@ -189,7 +184,6 @@ public class JdbcTest {
 
     @Test
     void createUserViaJdbcRepository() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = new UserJson(
                 null,
                 "repoUser_1",
@@ -208,7 +202,6 @@ public class JdbcTest {
 
     @Test
     void createUserViaSpringRepository() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = new UserJson(
                 null,
                 "Spring Repo User 1",
@@ -227,7 +220,6 @@ public class JdbcTest {
 
     @Test
     void findUserById() {
-        UserDbClient usersDbClient = new UserDbClient();
         UserJson user = usersDbClient.findUserById(UUID
                 .fromString("d149c9c5-f8a0-42fa-823e-c0d9f9f94797"));
         System.out.println(user);
@@ -235,7 +227,6 @@ public class JdbcTest {
 
     @Test
     void addFriendshipViaRepositoryJdbcTest() {
-        UserDbClient userDbClient = new UserDbClient();
         UserJson requesterUser = new UserJson(
                 UUID.fromString("6998e039-d10d-4dbd-a6a5-df64b220e2cb"),
                 "dove",
@@ -258,12 +249,11 @@ public class JdbcTest {
                 null,
                 null
         );
-        userDbClient.createFriendshipRepositoryJdbc(requesterUser, addresseeUser);
+        usersDbClient.createFriendshipRepositoryJdbc(requesterUser, addresseeUser);
     }
 
     @Test
     void addFriendshipViaRepositorySpringTest() {
-        UserDbClient userDbClient = new UserDbClient();
         UserJson requesterUser = new UserJson(
                 UUID.fromString("b815b120-6eaf-11f0-bd0f-0242ac110002"),
                 "Spring Repo User",
@@ -286,12 +276,26 @@ public class JdbcTest {
                 null,
                 null
         );
-        userDbClient.createFriendshipRepositorySpring(requesterUser, addresseeUser);
+        usersDbClient.createFriendshipRepositorySpring(requesterUser, addresseeUser);
     }
 
     @Test
     void findAllTest() {
         SpendDbClient spendDbClient = new SpendDbClient();
         spendDbClient.findAll().forEach(System.out::println);
+    }
+
+    @ValueSource(strings = {
+            "valentin-10"
+    })
+    @ParameterizedTest
+    void springJdbcTest(String uname) {
+        UserJson user = usersDbClient.createUser(
+                uname,
+                "12345"
+        );
+
+        usersDbClient.addIncomeInvitation(user, 1);
+        usersDbClient.addOutcomeInvitation(user, 1);
     }
 }

@@ -89,4 +89,9 @@ public class AuthUserRepositorySpring implements AuthUserRepository {
                 )
         );
     }
+
+    @Override
+    public Optional<AuthUserEntity> findByUsername(String username) {
+        return Optional.empty();
+    }
 }
