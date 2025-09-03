@@ -1,8 +1,9 @@
-package guru.qa.niffler.data.mapper;
+package guru.qa.niffler.data.extractor;
 
 import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
 import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserEntity;
+import guru.qa.niffler.data.mapper.UserdataUserEntityRowMapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
@@ -41,33 +42,36 @@ public class UserdataUserEntityResultSetExtractor implements ResultSetExtractor<
                     }
                 });
             }
-            UUID requesterId = rs.getObject("requester_id", UUID.class);
-            UUID addresseeId = rs.getObject("addressee_id", UUID.class);
-            FriendshipStatus friendshipStatus = FriendshipStatus.valueOf(rs.getString("status"));
-            java.sql.Date createdDate = rs.getDate("created_date");
+            String fsStatus = rs.getString("status");
+            if (fsStatus != null) {
+                FriendshipStatus friendshipStatus = FriendshipStatus.valueOf(rs.getString("status"));
+                UUID requesterId = rs.getObject("requester_id", UUID.class);
+                UUID addresseeId = rs.getObject("addressee_id", UUID.class);
+                java.sql.Date createdDate = rs.getDate("created_date");
 
-            UserEntity requesterUser = new UserEntity();
-            UserEntity addresseeUser = new UserEntity();
-            requesterUser.setId(requesterId);
-            addresseeUser.setId(addresseeId);
+                UserEntity requesterUser = new UserEntity();
+                UserEntity addresseeUser = new UserEntity();
+                requesterUser.setId(requesterId);
+                addresseeUser.setId(addresseeId);
 
-            FriendshipEntity friendshipRequest = new FriendshipEntity();
-            FriendshipEntity friendshipAddressee = new FriendshipEntity();
+                FriendshipEntity friendshipRequest = new FriendshipEntity();
+                FriendshipEntity friendshipAddressee = new FriendshipEntity();
 
-            friendshipRequest.setRequester(requesterUser);
-            friendshipRequest.setAddressee(addresseeUser);
-            friendshipRequest.setCreatedDate(createdDate);
-            friendshipRequest.setStatus(friendshipStatus);
+                friendshipRequest.setRequester(requesterUser);
+                friendshipRequest.setAddressee(addresseeUser);
+                friendshipRequest.setCreatedDate(createdDate);
+                friendshipRequest.setStatus(friendshipStatus);
 
-            friendshipAddressee.setRequester(addresseeUser);
-            friendshipAddressee.setAddressee(requesterUser);
-            friendshipAddressee.setCreatedDate(createdDate);
-            friendshipAddressee.setStatus(friendshipStatus);
+                friendshipAddressee.setRequester(addresseeUser);
+                friendshipAddressee.setAddressee(requesterUser);
+                friendshipAddressee.setCreatedDate(createdDate);
+                friendshipAddressee.setStatus(friendshipStatus);
 
-            if (userId.equals(requesterId)) {
-                friendshipRequests.add(friendshipRequest);
-            } else {
-                friendshipAddressees.add(friendshipAddressee);
+                if (userId.equals(requesterId)) {
+                    friendshipRequests.add(friendshipRequest);
+                } else {
+                    friendshipAddressees.add(friendshipAddressee);
+                }
             }
         }
         user.setFriendshipRequests(friendshipRequests);

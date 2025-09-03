@@ -2,7 +2,6 @@ package guru.qa.niffler.data.tpl;
 
 import com.atomikos.jdbc.AtomikosDataSourceBean;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -41,14 +40,5 @@ public class DataSources {
                     return dsBean;
                 }
         );
-    }
-
-    public static DataSource driverManagerDataSource(String jdbcUrl) {
-        DriverManagerDataSource ds = new DriverManagerDataSource();
-        ds.setUrl(jdbcUrl);
-        ds.setUsername("postgres");
-        ds.setPassword("secret");
-        ds.setDriverClassName("org.postgresql.xa.PGXADataSource");
-        return ds;
     }
 }

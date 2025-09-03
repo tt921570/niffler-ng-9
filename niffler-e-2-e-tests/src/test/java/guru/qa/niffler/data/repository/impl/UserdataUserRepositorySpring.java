@@ -3,7 +3,7 @@ package guru.qa.niffler.data.repository.impl;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserEntity;
-import guru.qa.niffler.data.mapper.UserdataUserEntityResultSetExtractor;
+import guru.qa.niffler.data.extractor.UserdataUserEntityResultSetExtractor;
 import guru.qa.niffler.data.repository.UserdataUserRepository;
 import guru.qa.niffler.data.tpl.DataSources;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -23,17 +23,17 @@ import java.util.UUID;
  */
 public class UserdataUserRepositorySpring implements UserdataUserRepository {
 
-    private static final Config CFG = Config.getInstance();
+    private static final String URL = Config.getInstance().userdataJdbcUrl();
 
     @Override
     public UserEntity create(UserEntity user) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.userdataJdbcUrl()));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
                     """
                     INSERT INTO \"user\" (username, currency, firstname, surname, photo, photo_small, full_name)
-                    VALUES (?,?,?,?,?,?,?)
+                    VALUES (?,?,?,?,?,?,?);
                     """,
                     Statement.RETURN_GENERATED_KEYS
             );
@@ -53,15 +53,47 @@ public class UserdataUserRepositorySpring implements UserdataUserRepository {
     }
 
     @Override
+    public UserEntity update(UserEntity user) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
+        jdbcTemplate.update(con -> {
+            PreparedStatement updatePs = con.prepareStatement(
+                    """
+                    UPDATE \"user\"
+                    SET
+                    username = ?,
+                    currency = ?,
+                    firstname = ?,
+                    surname = ?,
+                    photo = ?,
+                    photo_small = ?,
+                    full_name = ?
+                    WHERE id = ?;
+                    """,
+                    Statement.RETURN_GENERATED_KEYS
+            );
+            updatePs.setString(1, user.getUsername());
+            updatePs.setString(2, user.getCurrency().name());
+            updatePs.setString(3, user.getFirstname());
+            updatePs.setString(4, user.getSurname());
+            updatePs.setBytes(5, user.getPhoto());
+            updatePs.setBytes(6, user.getPhotoSmall());
+            updatePs.setString(7, user.getFullname());
+            updatePs.setObject(8, user.getId());
+            return updatePs;
+        });
+        return user;
+    }
+
+    @Override
     public Optional<UserEntity> findById(UUID id) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.userdataJdbcUrl()));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
         return Optional.ofNullable(
                 jdbcTemplate.query(
                         """
                         SELECT *
                         FROM "user" u
                         LEFT JOIN friendship f ON u.id = f.requester_id OR u.id = f.addressee_id
-                        WHERE u.id = ?
+                        WHERE u.id = ?;
                         """,
                         UserdataUserEntityResultSetExtractor.instance,
                         id
@@ -71,12 +103,24 @@ public class UserdataUserRepositorySpring implements UserdataUserRepository {
 
     @Override
     public Optional<UserEntity> findByUsername(String username) {
-        return Optional.empty();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
+        return Optional.ofNullable(
+                jdbcTemplate.query(
+                        """
+                        SELECT *
+                        FROM "user" u
+                        LEFT JOIN friendship f ON u.id = f.requester_id OR u.id = f.addressee_id
+                        WHERE u.username = ?;
+                        """,
+                        UserdataUserEntityResultSetExtractor.instance,
+                        username
+                )
+        );
     }
 
     @Override
     public void addIncomeInvitation(UserEntity requester, UserEntity addressee) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.userdataJdbcUrl()));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
@@ -99,7 +143,7 @@ public class UserdataUserRepositorySpring implements UserdataUserRepository {
 
     @Override
     public void addOutcomeInvitation(UserEntity requester, UserEntity addressee) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.userdataJdbcUrl()));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
@@ -118,7 +162,7 @@ public class UserdataUserRepositorySpring implements UserdataUserRepository {
 
     @Override
     public void addFriend(UserEntity requester, UserEntity addressee) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.userdataJdbcUrl()));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
         List<List<UserEntity>> userFriendshipEntries = List.of(
                 List.of(requester, addressee),
                 List.of(addressee, requester)
@@ -142,5 +186,18 @@ public class UserdataUserRepositorySpring implements UserdataUserRepository {
                     }
                 }
         );
+    }
+
+    @Override
+    public void remove(UserEntity user) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
+        jdbcTemplate.update(con -> {
+            PreparedStatement deleteUserPs = con.prepareStatement(
+                    "DELETE FROM \"user\" WHERE id = ?;"
+            );
+            deleteUserPs.setObject(1, user.getId());
+            deleteUserPs.executeUpdate();
+            return deleteUserPs;
+        });
     }
 }

@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 @Getter
 @Setter
-@Entity
+@Entity(name = "UserEntity")
 @Table(name = "\"user\"")
 public class UserEntity implements Serializable {
     @Id

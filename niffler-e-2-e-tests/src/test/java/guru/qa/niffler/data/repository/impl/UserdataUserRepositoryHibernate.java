@@ -26,6 +26,11 @@ public class UserdataUserRepositoryHibernate implements UserdataUserRepository {
     }
 
     @Override
+    public UserEntity update(UserEntity user) {
+        return user;
+    }
+
+    @Override
     public Optional<UserEntity> findById(UUID id) {
         return Optional.ofNullable(
                 entityManager.find(UserEntity.class, id)
@@ -62,5 +67,12 @@ public class UserdataUserRepositoryHibernate implements UserdataUserRepository {
         entityManager.joinTransaction();
         requester.addFriends(FriendshipStatus.ACCEPTED, addressee);
         addressee.addFriends(FriendshipStatus.ACCEPTED, requester);
+    }
+
+    @Override
+    public void remove(UserEntity user) {
+        entityManager.joinTransaction();
+        UserEntity deletingUserEntity = entityManager.getReference(UserEntity.class, user.getId());
+        entityManager.remove(deletingUserEntity);
     }
 }

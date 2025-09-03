@@ -1,9 +1,9 @@
 package guru.qa.niffler.test;
 
+import guru.qa.niffler.data.repository.impl.SpendRepositoryJdbc;
 import guru.qa.niffler.model.*;
-import guru.qa.niffler.service.UsersDbClient;
-import guru.qa.niffler.service.SpendDbClient;
-import org.junit.jupiter.api.Disabled;
+import guru.qa.niffler.service.impl.UsersDbClient;
+import guru.qa.niffler.service.impl.SpendDbClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -18,11 +18,10 @@ import static org.hamcrest.Matchers.notNullValue;
 public class JdbcTest {
 
     static UsersDbClient usersDbClient = new UsersDbClient();
+    static SpendDbClient spendDbClient = new SpendDbClient(new SpendRepositoryJdbc());
 
     @Test
     void txTest() {
-        SpendDbClient spendDbClient = new SpendDbClient();
-
         SpendJson spend = spendDbClient.createSpend(
                 new SpendJson(
                         null,
@@ -91,23 +90,6 @@ public class JdbcTest {
             errorMessage = e.getLocalizedMessage();
         }
         assertThat(errorMessage, containsString("Key (username)=(wombat) already exists."));
-    }
-
-    @Test
-    void chainedTxTest() {
-        UserJson user = new UserJson(
-                null,
-                "whale",
-                null,
-                null,
-                null,
-                CurrencyValues.RUB,
-                null,
-                null,
-                null
-        );
-        UserJson createdUser = usersDbClient.createUserViaChainedTx(user);
-        System.out.println("Created User: " + createdUser);
     }
 
     @Test
@@ -183,49 +165,6 @@ public class JdbcTest {
     }
 
     @Test
-    void createUserViaJdbcRepository() {
-        UserJson user = new UserJson(
-                null,
-                "repoUser_1",
-                null,
-                null,
-                null,
-                CurrencyValues.RUB,
-                null,
-                null,
-                null
-        );
-        UserJson createdUser = usersDbClient.createUser(user);
-        System.out.println("Created User: " + createdUser);
-        assertThat(createdUser.id(), notNullValue());
-    }
-
-    @Test
-    void createUserViaSpringRepository() {
-        UserJson user = new UserJson(
-                null,
-                "Spring Repo User 1",
-                null,
-                null,
-                null,
-                CurrencyValues.RUB,
-                null,
-                null,
-                null
-        );
-        UserJson createdUser = usersDbClient.createUserViaRepositorySpring(user);
-        System.out.println("Created User: " + createdUser);
-        assertThat(createdUser.id(), notNullValue());
-    }
-
-    @Test
-    void findUserById() {
-        UserJson user = usersDbClient.findUserById(UUID
-                .fromString("d149c9c5-f8a0-42fa-823e-c0d9f9f94797"));
-        System.out.println(user);
-    }
-
-    @Test
     void addFriendshipViaRepositoryJdbcTest() {
         UserJson requesterUser = new UserJson(
                 UUID.fromString("6998e039-d10d-4dbd-a6a5-df64b220e2cb"),
@@ -279,12 +218,6 @@ public class JdbcTest {
         usersDbClient.createFriendshipRepositorySpring(requesterUser, addresseeUser);
     }
 
-    @Test
-    void findAllTest() {
-        SpendDbClient spendDbClient = new SpendDbClient();
-        spendDbClient.findAll().forEach(System.out::println);
-    }
-
     @ValueSource(strings = {
             "valentin-10"
     })
@@ -295,7 +228,20 @@ public class JdbcTest {
                 "12345"
         );
 
-        usersDbClient.addIncomeInvitation(user, 1);
-        usersDbClient.addOutcomeInvitation(user, 1);
+        usersDbClient.createIncomeInvitations(user, 1);
+        usersDbClient.createOutcomeInvitations(user, 1);
+    }
+
+    @ValueSource(strings = {
+            "valentin-11"
+    })
+    @ParameterizedTest
+    void createFriendsViaHibernateTest(String uname) {
+        UserJson user = usersDbClient.createUser(
+                uname,
+                "12345"
+        );
+
+        usersDbClient.createFriends(user, 1);
     }
 }
