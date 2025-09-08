@@ -31,6 +31,6 @@ public class SpendRowMapper implements RowMapper<SpendEntity> {
         CategoryEntity ce = new CategoryEntity();
         ce.setId(rs.getObject("category_id", UUID.class));
         se.setCategory(ce);
-        return null;
+        return se;
     }
 }
